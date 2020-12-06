@@ -67,25 +67,25 @@ impl<'a> PassportData {
     }
 
     fn valid(&self) -> bool {
-        let hgt_re: Regex = Regex::new(r"^\d{2,3}(cm|in)$").unwrap();
+        let hgt_re: Regex = Regex::new(r"^(\d{2,3})(cm|in)$").unwrap();
         let hcl_re: Regex = Regex::new(r"^\#[0-9a-z]{6}$").unwrap();
-        let pid_re: Regex = Regex::new(r"[0-9]{9}").unwrap();
+        let pid_re: Regex = Regex::new(r"^[0-9]{9}$").unwrap();
 
         if self.byr.is_none() {
             return false;
         } else {
-            println!("BYR: {}", self.byr.clone().unwrap());
+            // println!("BYR: {}", self.byr.clone().unwrap());
             let year: i32 = self.byr.clone().unwrap().parse().unwrap();
             if year < 1920 || year > 2002 {
-                println!("BYR not valid");
+                // println!("BYR not valid");
                 return false;
             }
         }
         if self.iyr.is_none() {
             return false;
         } else {
-            let year: i32 = self.byr.clone().unwrap().parse().unwrap();
-            println!("IYR: {}", self.byr.clone().unwrap());
+            let year: i32 = self.iyr.clone().unwrap().parse().unwrap();
+            println!("IYR: {}", self.iyr.clone().unwrap());
             if year < 2010 || year > 2020 {
                 println!("IYR not valid");
                 return false;
@@ -95,7 +95,7 @@ impl<'a> PassportData {
             return false;
         } else {
             println!("EYR: {}", self.eyr.clone().unwrap());
-            let year: i32 = self.byr.clone().unwrap().parse().unwrap();
+            let year: i32 = self.eyr.clone().unwrap().parse().unwrap();
             if year < 2020 || year > 2030 {
                 println!("EYR not valid");
                 return false;
@@ -106,8 +106,9 @@ impl<'a> PassportData {
         } else {
             match hgt_re.captures(self.hgt.clone().unwrap().as_str()) {
                 Some(mat) => {
-                    let height: u32 = mat.get(0).unwrap().as_str().parse().unwrap();
-                    let unit = mat.get(1).unwrap();
+                    println!("Match: {:?}", mat);
+                    let height: u32 = mat.get(1).unwrap().as_str().parse().unwrap();
+                    let unit = mat.get(2).unwrap();
 
                     println!("Unit: {}, height: {}", unit.as_str(), height);
 
@@ -115,10 +116,12 @@ impl<'a> PassportData {
                         if height < 149 || height > 193 {
                             return false;
                         }
-                    } else {
+                    } else if unit.as_str() == "in" {
                         if height < 59 || height > 76 {
                             return false;
                         }
+                    } else {
+                        return false;
                     }
                 },
                 None => {
@@ -136,7 +139,9 @@ impl<'a> PassportData {
         if self.ecl.is_none() {
             return false;
         } else {
-            let color = self.hcl.clone().unwrap();
+            let color = self.ecl.clone().unwrap();
+
+            println!("Color: {}", color);
             if !self.valid_ecl().contains(&color.as_str()) {
                 return false;
             }
